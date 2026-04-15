@@ -12,10 +12,10 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
+import { useUser } from "@/contexts/UserContext";
 export function AppSidebar() {
   const location = useLocation();
-
+  const { user } = useUser(); // Get user from global state
   const navigation = [
     { name: "Event types", href: "/", icon: LinkIcon },
     { name: "Bookings", href: "/bookings", icon: Calendar },
@@ -83,7 +83,7 @@ export function AppSidebar() {
                   asChild
                   className="px-2 py-1.5 mt-2 rounded-md transition-colors h-8 text-[#3C3E44] hover:bg-black/5 hover:text-black font-medium w-full flex items-center gap-2"
               >
-                <a href="#" target="_blank" rel="noreferrer" className="w-full">
+                <a href="/tanish" target="_blank" rel="noreferrer" className="w-full flex items-center gap-2">
                   <ExternalLink className="h-4 w-4 shrink-0 text-gray-500" />
                   <span className="text-sm">View public page</span>
                 </a>
@@ -91,14 +91,19 @@ export function AppSidebar() {
             </SidebarMenuItem>
 
             <SidebarMenuItem>
-              <SidebarMenuButton
-                  asChild
-                  className="px-2 py-1.5 mt-0.5 rounded-md transition-colors h-8 text-[#3C3E44] hover:bg-black/5 hover:text-black font-medium w-full flex items-center gap-2"
-              >
-                <button onClick={() => {}} className="w-full text-left">
-                  <Copy className="h-4 w-4 shrink-0 text-gray-500" />
-                  <span className="text-sm">Copy public page link</span>
-                </button>
+              <SidebarMenuButton asChild className="px-2 py-1.5 mt-0.5 rounded-md transition-colors h-8 text-[#3C3E44] hover:bg-black/5 hover:text-black font-medium w-full flex items-center gap-2">
+
+                {/* DYNAMIC URL GENERATED HERE */}
+                <a
+                    href={user ? `/${user.username}` : "#"}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-full flex items-center gap-2"
+                >
+                  <ExternalLink className="h-4 w-4 shrink-0 text-gray-500" />
+                  <span className="text-sm">View public page</span>
+                </a>
+
               </SidebarMenuButton>
             </SidebarMenuItem>
 

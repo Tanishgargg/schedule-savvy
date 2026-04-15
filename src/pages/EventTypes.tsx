@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getEventTypes, createEventType, updateEventType, deleteEventType } from '@/services/api';
 import { EventType, CustomQuestion } from '@/types';
 import { AdminLayout } from '@/components/AdminLayout';
+import { useUser } from '@/hooks/useUser';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
@@ -38,6 +39,9 @@ const defaultFormData = {
 
 export default function EventTypesPage() {
   const queryClient = useQueryClient();
+  const { data: user } = useUser();
+  const username = user?.username || 'user';
+  
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editingEvent, setEditingEvent] = useState<EventType | null>(null);
@@ -116,7 +120,7 @@ export default function EventTypesPage() {
   };
 
   const copyLink = (slug: string) => {
-    navigator.clipboard.writeText(`${window.location.origin}/john-doe/${slug}`);
+    navigator.clipboard.writeText(`${window.location.origin}/${username}/${slug}`);
     toast.success('Link copied to clipboard');
   };
 
@@ -186,7 +190,7 @@ export default function EventTypesPage() {
                               {event.title}
                             </a>
                             <span className="hidden sm:inline text-sm text-gray-500 font-normal">
-                        /john-doe/{event.slug}
+                        /{username}/{event.slug}
                       </span>
                             {!event.isActive && (
                                 <span className="text-sm text-gray-400 ml-2">Hidden</span>
@@ -222,7 +226,7 @@ export default function EventTypesPage() {
                                 variant="ghost"
                                 size="icon"
                                 className="h-9 w-9 rounded-none border-r border-gray-200 hover:bg-gray-50 text-gray-700 focus-visible:ring-0"
-                                onClick={() => window.open(`/john-doe/${event.slug}`, '_blank')}
+                                onClick={() => window.open(`/${username}/${event.slug}`, '_blank')}
                                 title="Preview"
                             >
                               <ExternalLink className="h-4 w-4" />
@@ -301,7 +305,7 @@ export default function EventTypesPage() {
               <div>
                 <Label className="text-gray-700 font-medium">URL Slug</Label>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="text-sm text-gray-500">/john-doe/</span>
+                  <span className="text-sm text-gray-500">/{username}/</span>
                   <Input
                       value={formData.slug}
                       onChange={(e) => setFormData(f => ({ ...f, slug: e.target.value }))}

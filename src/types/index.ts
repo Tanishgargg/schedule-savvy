@@ -83,3 +83,12 @@ export interface PublicEventInfo {
   hostAvatar?: string;
   customQuestions: CustomQuestion[];
 }
+
+export interface User {
+  id: string;
+  email: string;
+  username: string;
+  name: string;
+  timezone: string;
+  avatarUrl?: string;
+}

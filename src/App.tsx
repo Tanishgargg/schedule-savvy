@@ -9,6 +9,7 @@ import Bookings from "./pages/Bookings";
 import Availability from "./pages/Availability";
 import PublicBooking from "./pages/PublicBooking";
 import NotFound from "./pages/NotFound";
+import { UserProvider } from "@/contexts/UserContext";
 
 const queryClient = new QueryClient();
 
@@ -18,14 +19,16 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/event-types" element={<EventTypes />} />
-          <Route path="/bookings" element={<Bookings />} />
-          <Route path="/availability" element={<Availability />} />
-          <Route path="/:username/:slug" element={<PublicBooking />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <UserProvider>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/event-types" element={<EventTypes />} />
+            <Route path="/bookings" element={<Bookings />} />
+            <Route path="/availability" element={<Availability />} />
+            <Route path="/:username/:slug" element={<PublicBooking />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </UserProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
