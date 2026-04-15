@@ -23,10 +23,11 @@ export function AppSidebar() {
   ];
 
   return (
-      // Applied the specific hex colors for background and default text
-      <Sidebar className="border-r border-gray-200 bg-[#F6F7F9] text-[#3C3E44]">
+      <Sidebar
+          className="border-r border-gray-200 [&>[data-sidebar=sidebar]]:bg-[#F6F7F9] text-[#3C3E44]"
+      >
 
-        {/* TOP: User Profile Block mimicking the HTML dropdown trigger */}
+        {/* TOP: User Profile Block */}
         <SidebarHeader className="p-3">
           <div className="flex w-full items-center justify-between rounded-md px-2 py-1.5 hover:bg-black/5 cursor-pointer transition-colors">
             <div className="flex items-center gap-2">
@@ -48,7 +49,6 @@ export function AppSidebar() {
             <SidebarGroupContent>
               <SidebarMenu>
                 {navigation.map((item) => {
-                  // Determine if the current route is active
                   const isActive = location.pathname === item.href || (item.href === "/" && location.pathname === "/event-types");
 
                   return (
@@ -57,8 +57,9 @@ export function AppSidebar() {
                             asChild
                             className={`px-2 py-1.5 my-0.5 rounded-md transition-colors h-8 flex items-center gap-2 ${
                                 isActive
-                                    ? "bg-[#E5E7EB] text-black font-medium hover:bg-[#E5E7EB]" // Active state overrides
-                                    : "text-[#3C3E44] hover:bg-black/5 hover:text-black font-medium" // Inactive state
+                                    // Added hover:text-black right here
+                                    ? "bg-[#E5E7EB] text-black font-medium hover:bg-[#E5E7EB] hover:text-black"
+                                    : "text-[#3C3E44] hover:bg-black/5 hover:text-black font-medium"
                             }`}
                         >
                           <Link to={item.href} className="w-full">
@@ -74,7 +75,7 @@ export function AppSidebar() {
           </SidebarGroup>
         </SidebarContent>
 
-        {/* BOTTOM: Secondary Actions & Settings from HTML snippet */}
+        {/* BOTTOM: Secondary Actions & Settings */}
         <SidebarFooter className="p-3">
           <SidebarMenu>
             <SidebarMenuItem>
@@ -106,7 +107,8 @@ export function AppSidebar() {
                   asChild
                   className={`px-2 py-1.5 mt-0.5 rounded-md transition-colors h-8 w-full flex items-center gap-2 ${
                       location.pathname === "/settings"
-                          ? "bg-[#E5E7EB] text-black font-medium hover:bg-[#E5E7EB]"
+                          // Added hover:text-black right here as well
+                          ? "bg-[#E5E7EB] text-black font-medium hover:bg-[#E5E7EB] hover:text-black"
                           : "text-[#3C3E44] hover:bg-black/5 hover:text-black font-medium"
                   }`}
               >
