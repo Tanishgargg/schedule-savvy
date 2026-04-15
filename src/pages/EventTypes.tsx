@@ -17,7 +17,8 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Plus, Copy, Pencil, Trash2, ExternalLink, Clock, MoreVertical } from 'lucide-react';
+// Added Search to the imports
+import { Plus, Copy, Pencil, Trash2, ExternalLink, Clock, MoreVertical, Search } from 'lucide-react';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -114,214 +115,235 @@ export default function EventTypesPage() {
   };
 
   return (
-    <AdminLayout>
-      <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Event Types</h1>
-            <p className="text-muted-foreground mt-1">Create events to share for people to book on your calendar.</p>
-          </div>
-          <Button onClick={openCreate}>
-            <Plus className="h-4 w-4 mr-2" />
-            New Event Type
-          </Button>
-        </div>
+      <AdminLayout>
+        <div className="max-w-4xl mx-auto">
 
-        {isLoading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="h-20 bg-muted animate-pulse rounded-lg" />
-            ))}
+          {/* UPDATED HEADER SECTION */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 md:mb-8 gap-4 md:gap-0">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-xl font-semibold tracking-wide text-foreground">Event types</h1>
+              <p className="text-sm text-muted-foreground hidden md:block mt-1">
+                Configure different events for people to book on your calendar.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-4 shrink-0">
+              <div className="relative max-w-64 w-full md:w-auto">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <Input
+                    type="search"
+                    placeholder="Search"
+                    className="pl-9 h-8 w-full md:w-64 rounded-[10px] bg-background text-sm transition-all focus-visible:ring-1"
+                />
+              </div>
+              <Button
+                  onClick={openCreate}
+                  className="h-8 px-3 py-1.5 rounded-[10px] font-medium flex items-center gap-1"
+              >
+                <Plus className="h-4 w-4 md:h-3 md:w-3" />
+                <span className="hidden md:inline">New</span>
+              </Button>
+            </div>
           </div>
-        ) : eventTypes.length === 0 ? (
-          <div className="text-center py-16 bg-card rounded-lg border">
-            <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-medium mb-2">No event types yet</h3>
-            <p className="text-muted-foreground mb-4">Create your first event type to start accepting bookings.</p>
-            <Button onClick={openCreate}>
-              <Plus className="h-4 w-4 mr-2" />
-              New Event Type
-            </Button>
-          </div>
-        ) : (
-          <div className="bg-card rounded-lg border divide-y">
-            {eventTypes.map((event) => (
-              <div key={event.id} className="flex items-center p-4 gap-4 hover:bg-muted/50 transition-colors">
-                <div className="w-1 h-12 rounded-full" style={{ backgroundColor: event.color }} />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-medium text-foreground truncate">{event.title}</h3>
-                    {!event.isActive && (
-                      <Badge variant="secondary" className="text-xs">Disabled</Badge>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3 mt-1">
+          {/* END UPDATED HEADER SECTION */}
+
+          {isLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map(i => (
+                    <div key={i} className="h-20 bg-muted animate-pulse rounded-lg" />
+                ))}
+              </div>
+          ) : eventTypes.length === 0 ? (
+              <div className="text-center py-16 bg-card rounded-lg border">
+                <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-medium mb-2">No event types yet</h3>
+                <p className="text-muted-foreground mb-4">Create your first event type to start accepting bookings.</p>
+                <Button onClick={openCreate} className="rounded-[10px]">
+                  <Plus className="h-4 w-4 mr-2" />
+                  New
+                </Button>
+              </div>
+          ) : (
+              <div className="bg-card rounded-lg border divide-y">
+                {eventTypes.map((event) => (
+                    <div key={event.id} className="flex items-center p-4 gap-4 hover:bg-muted/50 transition-colors">
+                      <div className="w-1 h-12 rounded-full" style={{ backgroundColor: event.color }} />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-medium text-foreground truncate">{event.title}</h3>
+                          {!event.isActive && (
+                              <Badge variant="secondary" className="text-xs">Disabled</Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3 mt-1">
                     <span className="text-sm text-muted-foreground flex items-center gap-1">
                       <Clock className="h-3 w-3" />
                       {event.duration}m
                     </span>
-                    <span className="text-sm text-muted-foreground flex items-center gap-1">
+                          <span className="text-sm text-muted-foreground flex items-center gap-1">
                       <ExternalLink className="h-3 w-3" />
                       /john-doe/{event.slug}
                     </span>
-                  </div>
-                </div>
-                <Switch
-                  checked={event.isActive}
-                  onCheckedChange={(checked) => toggleMutation.mutate({ id: event.id, isActive: checked })}
-                />
-                <Button variant="ghost" size="icon" onClick={() => copyLink(event.slug)} title="Copy link">
-                  <Copy className="h-4 w-4" />
-                </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => openEdit(event)}>
-                      <Pencil className="h-4 w-4 mr-2" /> Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="text-destructive"
-                      onClick={() => setDeleteId(event.id)}
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" /> Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Create/Edit Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{editingEvent ? 'Edit Event Type' : 'New Event Type'}</DialogTitle>
-            <DialogDescription>
-              {editingEvent ? 'Update your event type settings.' : 'Create a new event type for people to book.'}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div>
-              <Label>Title</Label>
-              <Input
-                value={formData.title}
-                onChange={(e) => {
-                  const title = e.target.value;
-                  setFormData(f => ({
-                    ...f,
-                    title,
-                    slug: editingEvent ? f.slug : autoSlug(title),
-                  }));
-                }}
-                placeholder="e.g. Quick Chat"
-              />
-            </div>
-            <div>
-              <Label>URL Slug</Label>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">/john-doe/</span>
-                <Input
-                  value={formData.slug}
-                  onChange={(e) => setFormData(f => ({ ...f, slug: e.target.value }))}
-                  placeholder="quick-chat"
-                />
-              </div>
-            </div>
-            <div>
-              <Label>Description</Label>
-              <Textarea
-                value={formData.description}
-                onChange={(e) => setFormData(f => ({ ...f, description: e.target.value }))}
-                placeholder="A brief description of this meeting..."
-                rows={3}
-              />
-            </div>
-            <div>
-              <Label>Duration</Label>
-              <div className="flex flex-wrap gap-2 mt-1">
-                {DURATION_OPTIONS.map(d => (
-                  <Button
-                    key={d}
-                    type="button"
-                    variant={formData.duration === d ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setFormData(f => ({ ...f, duration: d }))}
-                  >
-                    {d}m
-                  </Button>
+                        </div>
+                      </div>
+                      <Switch
+                          checked={event.isActive}
+                          onCheckedChange={(checked) => toggleMutation.mutate({ id: event.id, isActive: checked })}
+                      />
+                      <Button variant="ghost" size="icon" onClick={() => copyLink(event.slug)} title="Copy link">
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => openEdit(event)}>
+                            <Pencil className="h-4 w-4 mr-2" /> Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                              className="text-destructive"
+                              onClick={() => setDeleteId(event.id)}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" /> Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                 ))}
               </div>
-            </div>
-            <div>
-              <Label>Color</Label>
-              <div className="flex gap-2 mt-1">
-                {COLOR_OPTIONS.map(c => (
-                  <button
-                    key={c}
-                    type="button"
-                    className={`w-7 h-7 rounded-full border-2 transition-all ${formData.color === c ? 'border-foreground scale-110' : 'border-transparent'}`}
-                    style={{ backgroundColor: c }}
-                    onClick={() => setFormData(f => ({ ...f, color: c }))}
+          )}
+        </div>
+
+        {/* Create/Edit Dialog */}
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>{editingEvent ? 'Edit Event Type' : 'New Event Type'}</DialogTitle>
+              <DialogDescription>
+                {editingEvent ? 'Update your event type settings.' : 'Create a new event type for people to book.'}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+              <div>
+                <Label>Title</Label>
+                <Input
+                    value={formData.title}
+                    onChange={(e) => {
+                      const title = e.target.value;
+                      setFormData(f => ({
+                        ...f,
+                        title,
+                        slug: editingEvent ? f.slug : autoSlug(title),
+                      }));
+                    }}
+                    placeholder="e.g. Quick Chat"
+                />
+              </div>
+              <div>
+                <Label>URL Slug</Label>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">/john-doe/</span>
+                  <Input
+                      value={formData.slug}
+                      onChange={(e) => setFormData(f => ({ ...f, slug: e.target.value }))}
+                      placeholder="quick-chat"
                   />
-                ))}
+                </div>
               </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>Buffer before (min)</Label>
-                <Input
-                  type="number"
-                  min={0}
-                  value={formData.bufferTimeBefore}
-                  onChange={(e) => setFormData(f => ({ ...f, bufferTimeBefore: parseInt(e.target.value) || 0 }))}
+                <Label>Description</Label>
+                <Textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData(f => ({ ...f, description: e.target.value }))}
+                    placeholder="A brief description of this meeting..."
+                    rows={3}
                 />
               </div>
               <div>
-                <Label>Buffer after (min)</Label>
-                <Input
-                  type="number"
-                  min={0}
-                  value={formData.bufferTimeAfter}
-                  onChange={(e) => setFormData(f => ({ ...f, bufferTimeAfter: parseInt(e.target.value) || 0 }))}
-                />
+                <Label>Duration</Label>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {DURATION_OPTIONS.map(d => (
+                      <Button
+                          key={d}
+                          type="button"
+                          variant={formData.duration === d ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setFormData(f => ({ ...f, duration: d }))}
+                      >
+                        {d}m
+                      </Button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <Label>Color</Label>
+                <div className="flex gap-2 mt-1">
+                  {COLOR_OPTIONS.map(c => (
+                      <button
+                          key={c}
+                          type="button"
+                          className={`w-7 h-7 rounded-full border-2 transition-all ${formData.color === c ? 'border-foreground scale-110' : 'border-transparent'}`}
+                          style={{ backgroundColor: c }}
+                          onClick={() => setFormData(f => ({ ...f, color: c }))}
+                      />
+                  ))}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Buffer before (min)</Label>
+                  <Input
+                      type="number"
+                      min={0}
+                      value={formData.bufferTimeBefore}
+                      onChange={(e) => setFormData(f => ({ ...f, bufferTimeBefore: parseInt(e.target.value) || 0 }))}
+                  />
+                </div>
+                <div>
+                  <Label>Buffer after (min)</Label>
+                  <Input
+                      type="number"
+                      min={0}
+                      value={formData.bufferTimeAfter}
+                      onChange={(e) => setFormData(f => ({ ...f, bufferTimeAfter: parseInt(e.target.value) || 0 }))}
+                  />
+                </div>
               </div>
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleSubmit} disabled={createMutation.isPending || updateMutation.isPending}>
-              {editingEvent ? 'Save Changes' : 'Create'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button onClick={handleSubmit} disabled={createMutation.isPending || updateMutation.isPending}>
+                {editingEvent ? 'Save Changes' : 'Create'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
-      {/* Delete confirmation */}
-      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete event type?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete this event type and remove all associated data.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={() => deleteId && deleteMutation.mutate(deleteId)}
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </AdminLayout>
+        {/* Delete confirmation */}
+        <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete event type?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete this event type and remove all associated data.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  onClick={() => deleteId && deleteMutation.mutate(deleteId)}
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </AdminLayout>
   );
 }
