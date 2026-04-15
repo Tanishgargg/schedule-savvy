@@ -4,12 +4,10 @@ import { getEventTypes, createEventType, updateEventType, deleteEventType } from
 import { EventType, CustomQuestion } from '@/types';
 import { AdminLayout } from '@/components/AdminLayout';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from '@/components/ui/dialog';
@@ -17,10 +15,9 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-// Added Search to the imports
-import { Plus, Copy, Pencil, Trash2, ExternalLink, Clock, MoreVertical, Search } from 'lucide-react';
+import { Plus, Copy, Pencil, Trash2, Clock, MoreHorizontal, Search, ExternalLink, Link as LinkIcon, Files } from 'lucide-react';
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 
@@ -45,6 +42,7 @@ export default function EventTypesPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editingEvent, setEditingEvent] = useState<EventType | null>(null);
   const [formData, setFormData] = useState(defaultFormData);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const { data: eventTypes = [], isLoading } = useQuery({
     queryKey: ['eventTypes'],
@@ -93,6 +91,18 @@ export default function EventTypesPage() {
     setDialogOpen(true);
   };
 
+  const handleDuplicate = (event: EventType) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { id, ...eventData } = event;
+    const duplicatedData = {
+      ...eventData,
+      title: `${event.title} (Copy)`,
+      slug: `${event.slug}-copy`,
+      isActive: false, // Default duplicated events to hidden
+    };
+    createMutation.mutate(duplicatedData);
+  };
+
   const handleSubmit = () => {
     if (!formData.title || !formData.slug) {
       toast.error('Title and URL slug are required');
@@ -114,123 +124,166 @@ export default function EventTypesPage() {
     return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   };
 
+  const filteredEvents = eventTypes.filter(e =>
+      e.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      e.slug.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
       <AdminLayout>
-        <div className="max-w-4xl mx-auto">
-
-          {/* UPDATED HEADER SECTION */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 md:mb-8 gap-4 md:gap-0">
-            <div className="min-w-0 flex-1">
-              <h1 className="text-xl font-semibold tracking-wide text-foreground">Event types</h1>
-              <p className="text-sm text-muted-foreground hidden md:block mt-1">
-                Configure different events for people to book on your calendar.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-4 shrink-0">
-              <div className="relative max-w-64 w-full md:w-auto">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="h-4 w-4 text-muted-foreground" />
-                </div>
-                <Input
-                    type="search"
-                    placeholder="Search"
-                    className="pl-9 h-8 w-full md:w-64 rounded-[10px] bg-background text-sm transition-all focus-visible:ring-1"
-                />
-              </div>
-              <Button
-                  onClick={openCreate}
-                  className="h-8 px-3 py-1.5 rounded-[10px] font-medium flex items-center gap-1"
-              >
-                <Plus className="h-4 w-4 md:h-3 md:w-3" />
-                <span className="hidden md:inline">New</span>
-              </Button>
-            </div>
+        <div className="max-w-5xl mx-auto py-6">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-[22px] font-semibold text-gray-900 tracking-tight">Event Types</h1>
+            <p className="text-sm text-gray-500 mt-1">Configure different events for people to book on your calendar.</p>
           </div>
-          {/* END UPDATED HEADER SECTION */}
 
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div className="relative w-full sm:max-w-[280px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search"
+                  className="pl-9 h-9 rounded-[10px] border-gray-200 text-sm shadow-sm focus-visible:ring-black"
+              />
+            </div>
+            <Button
+                onClick={openCreate}
+                className="h-9 rounded-[10px] bg-black hover:bg-black/90 text-white px-4 font-medium shadow-sm transition-all"
+            >
+              <Plus className="h-4 w-4 mr-1.5" />
+              New
+            </Button>
+          </div>
+
+          {/* List Content */}
           {isLoading ? (
               <div className="space-y-3">
                 {[1, 2, 3].map(i => (
-                    <div key={i} className="h-20 bg-muted animate-pulse rounded-lg" />
+                    <div key={i} className="h-24 bg-gray-50 animate-pulse rounded-md border border-gray-200" />
                 ))}
               </div>
-          ) : eventTypes.length === 0 ? (
-              <div className="text-center py-16 bg-card rounded-lg border">
-                <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">No event types yet</h3>
-                <p className="text-muted-foreground mb-4">Create your first event type to start accepting bookings.</p>
-                <Button onClick={openCreate} className="rounded-[10px]">
+          ) : filteredEvents.length === 0 ? (
+              <div className="text-center py-16 bg-white rounded-md border border-gray-200 shadow-sm">
+                <Clock className="h-10 w-10 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-sm font-semibold text-gray-900 mb-1">No event types found</h3>
+                <p className="text-sm text-gray-500 mb-4">Create your first event type to start accepting bookings.</p>
+                <Button onClick={openCreate} variant="outline" className="h-9 rounded-[10px] font-medium border-gray-200">
                   <Plus className="h-4 w-4 mr-2" />
                   New
                 </Button>
               </div>
           ) : (
-              <div className="bg-card rounded-lg border divide-y">
-                {eventTypes.map((event) => (
-                    <div key={event.id} className="flex items-center p-4 gap-4 hover:bg-muted/50 transition-colors">
-                      <div className="w-1 h-12 rounded-full" style={{ backgroundColor: event.color }} />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-medium text-foreground truncate">{event.title}</h3>
+              <div className="bg-white rounded-md border border-gray-200 overflow-hidden">
+                <ul className="divide-y divide-gray-200">
+                  {filteredEvents.map((event) => (
+                      <li key={event.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:px-6 hover:bg-gray-50/50 transition-colors gap-4 group">
+                        {/* Left Section: Details */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <a href={`/event-types/${event.slug}`} className="font-semibold text-sm text-gray-900 truncate hover:underline">
+                              {event.title}
+                            </a>
+                            <span className="hidden sm:inline text-sm text-gray-500 font-normal">
+                        /john-doe/{event.slug}
+                      </span>
+                            {!event.isActive && (
+                                <span className="text-sm text-gray-400 ml-2">Hidden</span>
+                            )}
+                          </div>
+
+                          <div className="mt-2">
+                            <div className="inline-flex items-center justify-center rounded-[4px] gap-x-1.5 bg-gray-100 text-gray-700 py-1 px-1.5 text-xs font-medium leading-none">
+                              <Clock className="h-3 w-3 stroke-[2.5px]" />
+                              {event.duration}m
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Right Section: Actions */}
+                        <div className="flex items-center gap-4 sm:ml-4">
+                          {/* Only show Hidden text on mobile if disabled */}
                           {!event.isActive && (
-                              <Badge variant="secondary" className="text-xs">Disabled</Badge>
+                              <span className="sm:hidden text-sm text-gray-400">Hidden</span>
                           )}
+
+                          <div className="self-center flex h-auto w-fit flex-row items-center">
+                            <Switch
+                                checked={event.isActive}
+                                onCheckedChange={(checked) => toggleMutation.mutate({ id: event.id, isActive: checked })}
+                                className="data-[state=checked]:bg-black shadow-sm h-6 w-11"
+                            />
+                          </div>
+
+                          {/* Cal.com Icon Button Group */}
+                          <div className="flex items-center border border-gray-200 rounded-[8px] bg-white shadow-sm overflow-hidden">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-9 w-9 rounded-none border-r border-gray-200 hover:bg-gray-50 text-gray-700 focus-visible:ring-0"
+                                onClick={() => window.open(`/john-doe/${event.slug}`, '_blank')}
+                                title="Preview"
+                            >
+                              <ExternalLink className="h-4 w-4" />
+                            </Button>
+
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-9 w-9 rounded-none border-r border-gray-200 hover:bg-gray-50 text-gray-700 focus-visible:ring-0"
+                                onClick={() => copyLink(event.slug)}
+                                title="Copy link"
+                            >
+                              <LinkIcon className="h-4 w-4" />
+                            </Button>
+
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-none hover:bg-gray-50 text-gray-700 focus-visible:ring-0">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-48 rounded-[8px] p-1 border-gray-200 shadow-md">
+                                <DropdownMenuItem onClick={() => openEdit(event)} className="cursor-pointer text-sm font-medium text-gray-700 focus:bg-gray-100 rounded-md">
+                                  <Pencil className="h-4 w-4 mr-2 text-gray-500" /> Edit
+                                </DropdownMenuItem>
+
+                                {/* New Duplicate Option */}
+                                <DropdownMenuItem onClick={() => handleDuplicate(event)} className="cursor-pointer text-sm font-medium text-gray-700 focus:bg-gray-100 rounded-md mt-1">
+                                  <Files className="h-4 w-4 mr-2 text-gray-500" /> Duplicate
+                                </DropdownMenuItem>
+
+                                <DropdownMenuSeparator className="bg-gray-100 my-1" />
+                                <DropdownMenuItem
+                                    className="cursor-pointer text-sm font-medium text-red-600 focus:bg-red-50 focus:text-red-700 rounded-md"
+                                    onClick={() => setDeleteId(event.id)}
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" /> Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-3 mt-1">
-                    <span className="text-sm text-muted-foreground flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      {event.duration}m
-                    </span>
-                          <span className="text-sm text-muted-foreground flex items-center gap-1">
-                      <ExternalLink className="h-3 w-3" />
-                      /john-doe/{event.slug}
-                    </span>
-                        </div>
-                      </div>
-                      <Switch
-                          checked={event.isActive}
-                          onCheckedChange={(checked) => toggleMutation.mutate({ id: event.id, isActive: checked })}
-                      />
-                      <Button variant="ghost" size="icon" onClick={() => copyLink(event.slug)} title="Copy link">
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => openEdit(event)}>
-                            <Pencil className="h-4 w-4 mr-2" /> Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                              className="text-destructive"
-                              onClick={() => setDeleteId(event.id)}
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" /> Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                ))}
+                      </li>
+                  ))}
+                </ul>
               </div>
           )}
         </div>
 
         {/* Create/Edit Dialog */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-[12px]">
             <DialogHeader>
-              <DialogTitle>{editingEvent ? 'Edit Event Type' : 'New Event Type'}</DialogTitle>
+              <DialogTitle className="text-xl">{editingEvent ? 'Edit Event Type' : 'New Event Type'}</DialogTitle>
               <DialogDescription>
                 {editingEvent ? 'Update your event type settings.' : 'Create a new event type for people to book.'}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-2">
               <div>
-                <Label>Title</Label>
+                <Label className="text-gray-700 font-medium">Title</Label>
                 <Input
                     value={formData.title}
                     onChange={(e) => {
@@ -242,30 +295,33 @@ export default function EventTypesPage() {
                       }));
                     }}
                     placeholder="e.g. Quick Chat"
+                    className="mt-1 rounded-[8px] border-gray-200 focus-visible:ring-black"
                 />
               </div>
               <div>
-                <Label>URL Slug</Label>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">/john-doe/</span>
+                <Label className="text-gray-700 font-medium">URL Slug</Label>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-sm text-gray-500">/john-doe/</span>
                   <Input
                       value={formData.slug}
                       onChange={(e) => setFormData(f => ({ ...f, slug: e.target.value }))}
                       placeholder="quick-chat"
+                      className="rounded-[8px] border-gray-200 focus-visible:ring-black"
                   />
                 </div>
               </div>
               <div>
-                <Label>Description</Label>
+                <Label className="text-gray-700 font-medium">Description</Label>
                 <Textarea
                     value={formData.description}
                     onChange={(e) => setFormData(f => ({ ...f, description: e.target.value }))}
                     placeholder="A brief description of this meeting..."
                     rows={3}
+                    className="mt-1 rounded-[8px] border-gray-200 focus-visible:ring-black resize-none"
                 />
               </div>
               <div>
-                <Label>Duration</Label>
+                <Label className="text-gray-700 font-medium">Duration</Label>
                 <div className="flex flex-wrap gap-2 mt-1">
                   {DURATION_OPTIONS.map(d => (
                       <Button
@@ -273,6 +329,7 @@ export default function EventTypesPage() {
                           type="button"
                           variant={formData.duration === d ? 'default' : 'outline'}
                           size="sm"
+                          className={`rounded-[8px] ${formData.duration === d ? 'bg-black text-white' : 'border-gray-200'}`}
                           onClick={() => setFormData(f => ({ ...f, duration: d }))}
                       >
                         {d}m
@@ -280,44 +337,10 @@ export default function EventTypesPage() {
                   ))}
                 </div>
               </div>
-              <div>
-                <Label>Color</Label>
-                <div className="flex gap-2 mt-1">
-                  {COLOR_OPTIONS.map(c => (
-                      <button
-                          key={c}
-                          type="button"
-                          className={`w-7 h-7 rounded-full border-2 transition-all ${formData.color === c ? 'border-foreground scale-110' : 'border-transparent'}`}
-                          style={{ backgroundColor: c }}
-                          onClick={() => setFormData(f => ({ ...f, color: c }))}
-                      />
-                  ))}
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Buffer before (min)</Label>
-                  <Input
-                      type="number"
-                      min={0}
-                      value={formData.bufferTimeBefore}
-                      onChange={(e) => setFormData(f => ({ ...f, bufferTimeBefore: parseInt(e.target.value) || 0 }))}
-                  />
-                </div>
-                <div>
-                  <Label>Buffer after (min)</Label>
-                  <Input
-                      type="number"
-                      min={0}
-                      value={formData.bufferTimeAfter}
-                      onChange={(e) => setFormData(f => ({ ...f, bufferTimeAfter: parseInt(e.target.value) || 0 }))}
-                  />
-                </div>
-              </div>
             </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-              <Button onClick={handleSubmit} disabled={createMutation.isPending || updateMutation.isPending}>
+            <DialogFooter className="pt-4">
+              <Button variant="outline" onClick={() => setDialogOpen(false)} className="rounded-[8px] border-gray-200">Cancel</Button>
+              <Button onClick={handleSubmit} disabled={createMutation.isPending || updateMutation.isPending} className="rounded-[8px] bg-black text-white hover:bg-black/90">
                 {editingEvent ? 'Save Changes' : 'Create'}
               </Button>
             </DialogFooter>
@@ -326,7 +349,7 @@ export default function EventTypesPage() {
 
         {/* Delete confirmation */}
         <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-          <AlertDialogContent>
+          <AlertDialogContent className="rounded-[12px]">
             <AlertDialogHeader>
               <AlertDialogTitle>Delete event type?</AlertDialogTitle>
               <AlertDialogDescription>
@@ -334,9 +357,9 @@ export default function EventTypesPage() {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel className="rounded-[8px]">Cancel</AlertDialogCancel>
               <AlertDialogAction
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  className="rounded-[8px] bg-red-600 text-white hover:bg-red-700"
                   onClick={() => deleteId && deleteMutation.mutate(deleteId)}
               >
                 Delete
