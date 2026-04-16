@@ -8,33 +8,34 @@ import EventTypes from "./pages/EventTypes";
 import Bookings from "./pages/Bookings";
 import Availability from "./pages/Availability";
 import PublicBooking from "./pages/PublicBooking";
+import PublicProfile from "./pages/PublicProfile"; // <-- IMPORT ADDED
 import NotFound from "./pages/NotFound";
 import { UserProvider } from "@/contexts/UserContext";
-import PublicProfile from "./pages/PublicProfile";
 
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <UserProvider>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/:username" element={<PublicProfile />} />
-            <Route path="/:username/:eventSlug" element={<PublicBooking />} />
-            <Route path="/event-types" element={<EventTypes />} />
-            <Route path="/bookings" element={<Bookings />} />
-            <Route path="/availability" element={<Availability />} />
-            <Route path="/:username/:slug" element={<PublicBooking />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </UserProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <UserProvider>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/event-types" element={<EventTypes />} />
+              <Route path="/bookings" element={<Bookings />} />
+              <Route path="/availability" element={<Availability />} />
+
+              {/* PUBLIC ROUTES (Must come last) */}
+              <Route path="/:username" element={<PublicProfile />} />
+              <Route path="/:username/:slug" element={<PublicBooking />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </UserProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
 );
 
 export default App;
