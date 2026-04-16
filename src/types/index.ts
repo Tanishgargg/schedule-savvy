@@ -4,10 +4,8 @@ export interface EventType {
   slug: string;
   description: string;
   duration: number; // minutes
-  color: string;
-  isActive: boolean;
-  bufferTimeBefore: number; // minutes
-  bufferTimeAfter: number; // minutes
+  isHidden: boolean; // Replaced isActive
+  scheduleId: string | null; // Replaced color and buffers
   customQuestions: CustomQuestion[];
   createdAt: string;
 }
@@ -15,33 +13,24 @@ export interface EventType {
 export interface CustomQuestion {
   id: string;
   label: string;
-  type: 'text' | 'textarea' | 'select';
+  type: 'text' | 'textarea' | 'select' | 'phone' | 'checkbox';
   required: boolean;
   options?: string[]; // for select type
 }
 
-export interface AvailabilitySchedule {
-  id: string;
-  name: string;
-  timezone: string;
-  isDefault: boolean;
-  rules: DayAvailability[];
-  dateOverrides: DateOverride[];
-}
-
-export interface DayAvailability {
-  day: number; // 0=Sunday, 1=Monday, ..., 6=Saturday
-  enabled: boolean;
+// --- NEW SCHEDULE TYPES ---
+export interface AvailabilitySlot {
+  id?: string;
+  dayOfWeek: number; // 0=Sunday, 1=Monday, ..., 6=Saturday
   startTime: string; // "09:00"
   endTime: string; // "17:00"
 }
 
-export interface DateOverride {
+export interface Schedule {
   id: string;
-  date: string; // "YYYY-MM-DD"
-  type: 'blocked' | 'custom';
-  startTime?: string;
-  endTime?: string;
+  name: string;
+  timezone: string;
+  availabilities: AvailabilitySlot[];
 }
 
 export interface Booking {
@@ -78,7 +67,6 @@ export interface PublicEventInfo {
   description: string;
   duration: number;
   slug: string;
-  color: string;
   hostName: string;
   hostAvatar?: string;
   customQuestions: CustomQuestion[];

@@ -23,17 +23,14 @@ import {
 import { toast } from 'sonner';
 
 const DURATION_OPTIONS = [15, 30, 45, 60, 90, 120];
-const COLOR_OPTIONS = ['#4f46e5', '#0891b2', '#dc2626', '#ea580c', '#16a34a', '#9333ea', '#0d9488', '#be185d'];
 
 const defaultFormData = {
   title: '',
   slug: '',
   description: '',
   duration: 30,
-  color: '#4f46e5',
-  isActive: true,
-  bufferTimeBefore: 0,
-  bufferTimeAfter: 0,
+  isHidden: false,
+  scheduleId: null, // <--- This is the magic word!
   customQuestions: [] as CustomQuestion[],
 };
 
@@ -41,7 +38,7 @@ export default function EventTypesPage() {
   const queryClient = useQueryClient();
   const { data: user } = useUser();
   const username = user?.username || 'user';
-  
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editingEvent, setEditingEvent] = useState<EventType | null>(null);
@@ -69,7 +66,7 @@ export default function EventTypesPage() {
   });
 
   const toggleMutation = useMutation({
-    mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) => updateEventType(id, { isActive }),
+    mutationFn: ({ id, isHidden }: { id: string; isHidden: boolean }) => updateEventType(id, { isHidden }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['eventTypes'] }),
   });
 
@@ -86,23 +83,20 @@ export default function EventTypesPage() {
       slug: event.slug,
       description: event.description,
       duration: event.duration,
-      color: event.color,
-      isActive: event.isActive,
-      bufferTimeBefore: event.bufferTimeBefore,
-      bufferTimeAfter: event.bufferTimeAfter,
+      isHidden: event.isHidden,
+      scheduleId: event.scheduleId,
       customQuestions: event.customQuestions,
     });
     setDialogOpen(true);
   };
 
   const handleDuplicate = (event: EventType) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id, ...eventData } = event;
     const duplicatedData = {
       ...eventData,
       title: `${event.title} (Copy)`,
       slug: `${event.slug}-copy`,
-      isActive: false, // Default duplicated events to hidden
+      isHidden: true, // Default duplicated events to hidden
     };
     createMutation.mutate(duplicatedData);
   };
@@ -136,7 +130,6 @@ export default function EventTypesPage() {
   return (
       <AdminLayout>
         <div className="max-w-5xl mx-auto py-6">
-          {/* Header */}
           <div className="mb-8">
             <h1 className="text-[22px] font-semibold text-gray-900 tracking-tight">Event Types</h1>
             <p className="text-sm text-gray-500 mt-1">Configure different events for people to book on your calendar.</p>
@@ -161,7 +154,6 @@ export default function EventTypesPage() {
             </Button>
           </div>
 
-          {/* List Content */}
           {isLoading ? (
               <div className="space-y-3">
                 {[1, 2, 3].map(i => (
@@ -183,7 +175,6 @@ export default function EventTypesPage() {
                 <ul className="divide-y divide-gray-200">
                   {filteredEvents.map((event) => (
                       <li key={event.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:px-6 hover:bg-gray-50/50 transition-colors gap-4 group">
-                        {/* Left Section: Details */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <a href={`/event-types/${event.slug}`} className="font-semibold text-sm text-gray-900 truncate hover:underline">
@@ -192,7 +183,7 @@ export default function EventTypesPage() {
                             <span className="hidden sm:inline text-sm text-gray-500 font-normal">
                         /{username}/{event.slug}
                       </span>
-                            {!event.isActive && (
+                            {event.isHidden && (
                                 <span className="text-sm text-gray-400 ml-2">Hidden</span>
                             )}
                           </div>
@@ -205,22 +196,19 @@ export default function EventTypesPage() {
                           </div>
                         </div>
 
-                        {/* Right Section: Actions */}
                         <div className="flex items-center gap-4 sm:ml-4">
-                          {/* Only show Hidden text on mobile if disabled */}
-                          {!event.isActive && (
+                          {event.isHidden && (
                               <span className="sm:hidden text-sm text-gray-400">Hidden</span>
                           )}
 
                           <div className="self-center flex h-auto w-fit flex-row items-center">
                             <Switch
-                                checked={event.isActive}
-                                onCheckedChange={(checked) => toggleMutation.mutate({ id: event.id, isActive: checked })}
+                                checked={!event.isHidden}
+                                onCheckedChange={(checked) => toggleMutation.mutate({ id: event.id, isHidden: !checked })}
                                 className="data-[state=checked]:bg-black shadow-sm h-6 w-11"
                             />
                           </div>
 
-                          {/* Cal.com Icon Button Group */}
                           <div className="flex items-center border border-gray-200 rounded-[8px] bg-white shadow-sm overflow-hidden">
                             <Button
                                 variant="ghost"
@@ -253,7 +241,6 @@ export default function EventTypesPage() {
                                   <Pencil className="h-4 w-4 mr-2 text-gray-500" /> Edit
                                 </DropdownMenuItem>
 
-                                {/* New Duplicate Option */}
                                 <DropdownMenuItem onClick={() => handleDuplicate(event)} className="cursor-pointer text-sm font-medium text-gray-700 focus:bg-gray-100 rounded-md mt-1">
                                   <Files className="h-4 w-4 mr-2 text-gray-500" /> Duplicate
                                 </DropdownMenuItem>
@@ -276,7 +263,6 @@ export default function EventTypesPage() {
           )}
         </div>
 
-        {/* Create/Edit Dialog */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-[12px]">
             <DialogHeader>
@@ -302,18 +288,27 @@ export default function EventTypesPage() {
                     className="mt-1 rounded-[8px] border-gray-200 focus-visible:ring-black"
                 />
               </div>
+
+              {/* Seamless Cal.com URL Input */}
               <div>
                 <Label className="text-gray-700 font-medium">URL Slug</Label>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-sm text-gray-500">/{username}/</span>
-                  <Input
+                <div className="flex items-center mt-1 focus-within:ring-2 focus-within:ring-black rounded-[8px] border border-gray-200 overflow-hidden transition-shadow">
+                  <span className="bg-gray-50 px-3 py-2.5 text-sm text-gray-500 border-r border-gray-200 select-none whitespace-nowrap">
+                    {window.location.host}/{username}/
+                  </span>
+                  <input
+                      type="text"
                       value={formData.slug}
-                      onChange={(e) => setFormData(f => ({ ...f, slug: e.target.value }))}
+                      onChange={(e) => {
+                        const formattedSlug = e.target.value.toLowerCase().replace(/[^a-z0-9-]+/g, '-');
+                        setFormData(f => ({ ...f, slug: formattedSlug }));
+                      }}
                       placeholder="quick-chat"
-                      className="rounded-[8px] border-gray-200 focus-visible:ring-black"
+                      className="flex-1 px-3 py-2.5 text-sm outline-none border-none text-gray-900 focus:ring-0"
                   />
                 </div>
               </div>
+
               <div>
                 <Label className="text-gray-700 font-medium">Description</Label>
                 <Textarea
@@ -351,7 +346,6 @@ export default function EventTypesPage() {
           </DialogContent>
         </Dialog>
 
-        {/* Delete confirmation */}
         <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
           <AlertDialogContent className="rounded-[12px]">
             <AlertDialogHeader>

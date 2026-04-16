@@ -10,6 +10,7 @@ import Availability from "./pages/Availability";
 import PublicBooking from "./pages/PublicBooking";
 import NotFound from "./pages/NotFound";
 import { UserProvider } from "@/contexts/UserContext";
+import PublicProfile from "./pages/PublicProfile";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,8 @@ const App = () => (
         <UserProvider>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/:username" element={<PublicProfile />} />
+            <Route path="/:username/:eventSlug" element={<PublicBooking />} />
             <Route path="/event-types" element={<EventTypes />} />
             <Route path="/bookings" element={<Bookings />} />
             <Route path="/availability" element={<Availability />} />
